@@ -1,9 +1,10 @@
 const path = require('path');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
 
 
-const isEnvProduction = false;
+const isEnvProduction = true;
 
 module.exports = {
     entry: './src/index.tsx',
@@ -20,6 +21,7 @@ module.exports = {
                 */
                 test: /\.tsx?$/,
                 loader: 'babel-loader',
+                include: path.resolve(__dirname, 'src'),
                 exclude: /node_modules/,
                 options: {
                     presets: [
@@ -81,16 +83,69 @@ module.exports = {
             // },
             {
                 test: /\.css$/,
+                include: path.resolve(__dirname, 'src'),
                 use: ["style-loader", "css-loader"]
             }
         ],
     },
+    optimization:
+        Object.assign(
+            {},
+            isEnvProduction && {
+                /**
+                 * In production only
+                 */
+                splitChunks: {
+                    /**
+                     * https://webpack.js.org/plugins/split-chunks-plugin/
+                     * Another excellent literatures on caching 
+                     *  - https://medium.com/webpack/predictable-long-term-caching-with-webpack-d3eee1d3fa31
+                     *  - https://github.com/webpack/webpack.js.org/issues/652
+                     *  - https://github.com/facebook/create-react-app/discussions/9161
+                     */
+                    cacheGroups: {
+                        vendor: {
+                            /**
+                             * extract react & react-dom into a new chunk for caching
+                             */
+                            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+                            name: 'vendor',
+                            chunks: 'all',
+                        },
+                    },
+                },
+                runtimeChunk: {
+                    /**
+                     * Extract webpack runtime to a new chunk named runtime.<hash>.js
+                    */
+                    name: 'runtime',
+                }
+            }
+        ),
     resolve: {
         extensions: ['.tsx'],
+        alias: {
+            styles: path.resolve(__dirname, 'src/styles')
+        }
     },
     output: {
-        filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
+        /**
+         * clean can be configured to move changing files into an ignored/ folder,
+         * or use "dry" option to log changing file names etc..
+         * true => will overwrite changed files
+         */
+        clean: true,
+        // There will be one main bundle, and one file per asynchronous chunk.
+        // In development, it does not produce real files.
+        filename: isEnvProduction
+            ? 'static/js/[name].[contenthash:8].js'
+            : 'static/js/bundle.js',
+        // There are also additional JS chunk files if you use code splitting.
+        chunkFilename: isEnvProduction
+            ? 'static/js/[name].[contenthash:8].chunk.js'
+            : 'static/js/[name].chunk.js',
+        assetModuleFilename: 'static/media/[name].[hash][ext]',
     },
     plugins: [
         new HTMLWebpackPlugin(
@@ -107,6 +162,13 @@ module.exports = {
                     inject: true,
                 }, isEnvProduction ?
                 {
+                    /**
+                     * minifyJS is applied to the JS inside <script> tag, it is different from terser or swc or esbuild minify.
+                     *  -they minify the bundle itself. webpack 5 comes with terser builtin, so unless custom conf is to be provided,
+                     *  -no need to add it to plugins.
+                     * minifyCSS applies to CSS in <style> tag, not the css files if extracting css ( mini-css-extract-plugin ) is used ( in production ),
+                     *  -in dev, style-loader injects css to <style> tag. so it can be minimized if needed.
+                     */
                     minify: {
                         collapseWhitespace: true,
                         keepClosingSlash: true,
@@ -133,6 +195,14 @@ module.exports = {
              * this is a safer option for now, DEFAULTS for now.
              */
             {}
-        )
-    ]
+        ),
+        new InlineChunkHtmlPlugin(HTMLWebpackPlugin, [/runtime.+[.]js/])
+    ],
+    /**
+     * https://webpack.js.org/configuration/devtool/
+     * Refer above link for more options
+     * controls source map generation flavours
+     * ignore source maps in production
+     */
+    devtool: isEnvProduction ? false : 'source-map'
 };
