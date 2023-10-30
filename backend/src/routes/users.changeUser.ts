@@ -4,14 +4,14 @@ import { Request, Response, Router } from 'express';
 const router = Router();
 
 interface ChangeUserReqBody {
-    username: string,
+    email: string,
     password: string
 }
 
 router.post(`/changeUser`, async (req: Request<{}, {}, ChangeUserReqBody>, res: Response) => {
-    const { username, password } = req.body
+    const { email, password } = req.body
     try {
-        console.log({ username, password })
+        console.log({ email, password })
         /**
          * TODO:
          * - Check if user exists
