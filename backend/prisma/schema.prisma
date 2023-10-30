@@ -9,11 +9,10 @@ datasource db {
 }
 
 model User {
-    user_id    Int    @id @default(autoincrement())
-    email      String @unique
-    first_name String
-    last_name  String
-    todos      Todo[]
+    user_id  Int    @id @default(autoincrement())
+    email    String @unique
+    password String
+    todos    Todo[]
 }
 
 model Todo {
