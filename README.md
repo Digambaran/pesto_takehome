@@ -1,13 +1,27 @@
 # pesto_takehome
 take home assignment from pesto
-## Design plans
+## DB
 ```mermaid
-  graph TD;
-      A-->B;
-      A-->C;
-      B-->D;
-      C-->D;
+  erDiagram
+    USER ||--o{ TODO : adds
+    USER {
+        Int user_id PK
+        string email
+        string password
+        TODO[] todos
+    }
+    TODO {
+        Int todo_id PK
+        string title
+        string description
+        string status
+        date createdAt
+        date updatedAt
+        Int user_id FK
+    }
 ```
+
+## Design plans
 - set email in cookie to identify user, and let an __httpOnly__ set cookie be the source for authentication for now 
 - if there is no set cookie, let the session belong to a *Guest* user
 - on __/changeUser__ if *password* and *email* are correct, set new cookie and let the react app trigger a new __/listTodos__ api request
