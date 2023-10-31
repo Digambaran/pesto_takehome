@@ -1,4 +1,7 @@
 # pesto_takehome
+-----------------------------------------------------------------------------------------------
+----------------------------------------*NOT COMPLETE*-----------------------------------------
+-----------------------------------------------------------------------------------------------
 take home assignment from pesto
 ## DB
 ```mermaid
@@ -35,5 +38,7 @@ take home assignment from pesto
 - [ ] add tests for api
 - [ ] add missing apis
 - [ ] add scripts and nodemon (or any better alternative)
+- [ ] ability to have multiple todo sheets for one user, once all todos in a sheet is completed, it should be marked archived
+- [ ] proper authentication
 
 
